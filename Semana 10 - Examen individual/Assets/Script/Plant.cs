@@ -9,19 +9,13 @@ public class Plant : IGrowth
     public event Action<int> ProgressGrowthComplete;
     public int Price { get; set; }
 
-    private int progress = 0;
-    private int id;
-
-    public Plant(int id)
-    {
-        this.id = id;
-    }
+    private int progress = 0;          
 
     public void Growth()
     {
         if (progress == 100)
         {
-            ProgressGrowthComplete?.Invoke(id);
+            ProgressGrowthComplete?.Invoke(Price);
         }
     }
     

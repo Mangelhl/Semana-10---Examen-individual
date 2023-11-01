@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Seed
+public class Seed : Plant
 {
     public int Count { get; private set; }
 

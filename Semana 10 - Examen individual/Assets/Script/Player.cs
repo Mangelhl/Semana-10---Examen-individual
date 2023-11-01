@@ -19,9 +19,26 @@ public class Player : MonoBehaviour
 
     public int Money { get; set; }
 
-    public Player()
+    public float moveSpeed = 5.0f;
+
+    public int maxPlantCount = 10; 
+    public int maxCorralAnimalCount = 10;
+
+    public GameObject seedPrefab;
+
+    private NPCVendor currentVendor;
+
+    private void Awake()
     {
-        observer = new IObserver();
+        if (instance == null)
+        {
+            instance = this;
+            observer = new IObserver();
+        }
+        else
+        {
+            Destroy(this.gameObject);
+        }
     }
 
     public int CalculatePricePurchase(int unitPrice, int amount)
@@ -29,21 +46,78 @@ public class Player : MonoBehaviour
         return unitPrice * amount;
     }
 
-    void Start()
+    private void Start()
     {
-        playerTransform = GetComponent<Transform>();
+        playerTransform = transform;
     }
 
-    public void Move(float x, float y)
-    {
-        Vector3 currentPosition = playerTransform.position;
+    private void Update()
+    {        
+        float horizontalInput = Input.GetAxis("Horizontal");
+        float verticalInput = Input.GetAxis("Vertical");
+        Vector3 movement = new Vector3(horizontalInput, 0.0f, verticalInput);
 
-        float newX = currentPosition.x + x;
-        float newY = currentPosition.y + y;
+        playerTransform.Translate(movement * moveSpeed * Time.deltaTime);
 
-        playerTransform.position = new Vector3(newX, newY, currentPosition.z);
+        if (Input.GetKeyDown(KeyCode.E) && currentVendor != null)
+        {
+            OpenVendorShop();
+        }
+
+        if (Input.GetKeyDown(KeyCode.Alpha1))
+        {
+            if (plants.Count < maxPlantCount)
+            {
+                Seed newSeed = Instantiate(seedPrefab).GetComponent<Seed>();
+                PlantSeed(newSeed);
+            }
+            else
+            {
+                Debug.Log("No hay espacio para más plantas.");
+            }
+        }
+
+        if (Input.GetKeyDown(KeyCode.Alpha2))
+        {            
+            if (plants.Count > 0)
+            {
+                CultivatePlant(plants[0]);
+            }
+            else
+            {
+                Debug.Log("No hay plantas para cultivar.");
+            }
+        }
+
+        if (Input.GetKeyDown(KeyCode.Alpha3))
+        {            
+            if (corralAnimals.Count < maxCorralAnimalCount)
+            {
+                Animal newAnimal = new Animal(1, 50);
+                PlaceAnimal(newAnimal);
+            }
+            else
+            {
+                Debug.Log("El corral de animales está lleno.");
+            }
+        }
+
+        if (Input.GetKeyDown(KeyCode.Alpha4))
+        {
+            GoToMarket();
+        }
     }
-   
+
+    private void OpenVendorShop()
+    {
+
+        VendorShop.Instance.SetCurrentVendor(currentVendor);
+    }
+
+    public void SetCurrentVendor(NPCVendor vendor)
+    {
+        currentVendor = vendor;
+    }
 
     public void BuySeeds(int amount)
     {
@@ -73,8 +147,16 @@ public class Player : MonoBehaviour
 
     public void PlantSeed(Seed seed)
     {
-        seed.Plant();
-        observer.NotifyQuantity(seed.Count); 
+        if(plants.Count < maxPlantCount)
+        {
+            plants.Add(seed);
+            seed.Plant();
+            observer.NotifyQuantity(seed.Count);
+        }
+        else
+        {
+            Debug.Log("No hay espacio para más plantas.");
+        }
     }
 
     public void PlaceAnimal(Animal animal)
@@ -83,19 +165,25 @@ public class Player : MonoBehaviour
 
         if (isCorralSpecial)
         {
-            corralAnimals.Add(animal);
-
-            animal.ProgressReproductionComplete += ProgressReproductionComplete;
-
-            if (corralAnimals.Count >= 2)
+            if (corralAnimals.Count < maxCorralAnimalCount)
             {
-                StartPlayback();
+                corralAnimals.Add(animal);
+                animal.ProgressReproductionComplete += ProgressReproductionComplete;
+
+                if (corralAnimals.Count >= 2)
+                {
+                    StartPlayback();
+                }
+            }
+            else
+            {
+                Debug.Log("El corral de animales está lleno.");
             }
         }
         else
         {
             Debug.Log("No hay corral especial para animales.");
-        }               
+        }
     }
 
     private void StartPlayback()
@@ -117,23 +205,79 @@ public class Player : MonoBehaviour
         observer.NotifyProgress(plant.Price);
     }
 
+    private void GoToMarket()
+    {
+        float distanceToMarket = Vector3.Distance(playerTransform.position, Market.Instance.transform.position);
+        if (distanceToMarket < 2.0f)
+        {
+            if (plants.Count > 0)
+            {
+                SellPlant(plants[0]);
+            }
+
+            if (corralAnimals.Count > 0)
+            {
+                SellAnimal(corralAnimals[0]);
+            }
+
+            int newQuantity = 1; 
+            int newAmountOfMoney = 10;
+            int newProgress = 5;
+            
+
+            Sell(newAmountOfMoney, newQuantity, newProgress);
+        }
+        else
+        {
+            Debug.Log("Estás demasiado lejos del mercado para vender.");
+        }
+    }
+    private void Sell(int saleprice, int quantitySold, int newProgress)
+    {
+        Money += saleprice * quantitySold;
+        observer.NotifyMoney(Money);
+        observer.NotifyQuantity(-quantitySold);
+    }
+
+    private int NotifyMoney()
+    {
+        int salePrice = 50;
+        int quantitySold = 1;
+        int newAmountOfMoney = Money + salePrice * quantitySold;
+        return newAmountOfMoney;
+    }
+
+    private int NotifyQuantity()
+    {
+        int newQuantity = plants.Count + corralAnimals.Count - 1;
+        return newQuantity;
+    }
+
+    private int NotifyProgress()
+    {
+        int newProgress = 5;
+        return newProgress;
+    }
+
     public void SellPlant(Plant plant)
     {
         int salePrice = plant.Price;
         Money += salePrice;
-        
+
         observer.NotifyMoney(Money);
-        observer.NotifyQuantity(-1); 
+        observer.NotifyQuantity(-1);
+
+        plants.Remove(plant);
     }
 
     public void SellAnimal(Animal animal)
-    {        
+    {
         int salePrice = animal.Price;
         Money += salePrice;
-       
-        observer.NotifyMoney(Money);
-        observer.NotifyQuantity(-1); 
-    }
 
-    
+        observer.NotifyMoney(Money);
+        observer.NotifyQuantity(-1);
+
+        corralAnimals.Remove(animal);
+    }
 }
