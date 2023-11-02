@@ -5,8 +5,9 @@ using System;
 
 public class Player : MonoBehaviour
 {
+    public PlantSeed plantSeed;
     private static Player instance;
-    public static Player Instance => instance ?? (instance = new Player());
+    public static Player Instance => instance;
 
     private List<Animal> corralAnimals = new List<Animal>();
     private List<Plant> plants = new List<Plant>();
@@ -28,17 +29,28 @@ public class Player : MonoBehaviour
 
     private NPCVendor currentVendor;
 
+    private bool hasSeed = false;
+    private bool hasPurchasedSeeds = false;
+
+    public bool HasSeed
+    {
+        get { return hasSeed; }
+        set
+        {            
+            if (hasPurchasedSeeds)
+            {
+                hasSeed = value;
+            }
+        }
+    }
+
     private void Awake()
     {
         if (instance == null)
         {
             instance = this;
             observer = new IObserver();
-        }
-        else
-        {
-            Destroy(this.gameObject);
-        }
+        }        
     }
 
     public int CalculatePricePurchase(int unitPrice, int amount)
@@ -64,16 +76,16 @@ public class Player : MonoBehaviour
             OpenVendorShop();
         }
 
-        if (Input.GetKeyDown(KeyCode.Alpha1))
+       if (Input.GetKeyDown(KeyCode.Alpha1))
         {
-            if (plants.Count < maxPlantCount)
+            if (hasPurchasedSeeds && !hasSeed && plants.Count < maxPlantCount)
             {
                 Seed newSeed = Instantiate(seedPrefab).GetComponent<Seed>();
                 PlantSeed(newSeed);
             }
             else
             {
-                Debug.Log("No hay espacio para más plantas.");
+                Debug.Log("No puedes plantar en este momento.");
             }
         }
 
@@ -129,6 +141,8 @@ public class Player : MonoBehaviour
             
             observer.NotifyMoney(Money);
             observer.NotifyQuantity(amount);
+            hasPurchasedSeeds = true;
+            hasSeed = true;            
         }
     }
 
@@ -152,6 +166,7 @@ public class Player : MonoBehaviour
             plants.Add(seed);
             seed.Plant();
             observer.NotifyQuantity(seed.Count);
+            plantSeed.ReceiveSeed(seed);
         }
         else
         {
@@ -237,27 +252,7 @@ public class Player : MonoBehaviour
         Money += saleprice * quantitySold;
         observer.NotifyMoney(Money);
         observer.NotifyQuantity(-quantitySold);
-    }
-
-    private int NotifyMoney()
-    {
-        int salePrice = 50;
-        int quantitySold = 1;
-        int newAmountOfMoney = Money + salePrice * quantitySold;
-        return newAmountOfMoney;
-    }
-
-    private int NotifyQuantity()
-    {
-        int newQuantity = plants.Count + corralAnimals.Count - 1;
-        return newQuantity;
-    }
-
-    private int NotifyProgress()
-    {
-        int newProgress = 5;
-        return newProgress;
-    }
+    }  
 
     public void SellPlant(Plant plant)
     {
@@ -278,6 +273,25 @@ public class Player : MonoBehaviour
         observer.NotifyMoney(Money);
         observer.NotifyQuantity(-1);
 
+        corralAnimals.Remove(animal);
+    }
+    public void NotifyMoney(int money)
+    {
+        observer.NotifyMoney(money);
+    }
+
+    public void NotifyQuantity(int quantity)
+    {
+        observer.NotifyQuantity(quantity);
+    }
+
+    public void RemovePlant(Plant plant)
+    {
+        plants.Remove(plant);
+    }
+
+    public void RemoveAnimal(Animal animal)
+    {
         corralAnimals.Remove(animal);
     }
 }

@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 6512460090023626353}
   - component: {fileID: 3717337002437239067}
   - component: {fileID: 3003292968988703617}
-  - component: {fileID: 755949988983419887}
+  - component: {fileID: -6785027093489703118}
   m_Layer: 0
   m_Name: 'PlantingArea '
   m_TagString: 'PlantingArea '
@@ -115,7 +115,7 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!114 &755949988983419887
+--- !u!114 &-6785027093489703118
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -124,8 +124,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 1561227149296132606}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0d0f10914989d8740840ae950bfd9cac, type: 3}
+  m_Script: {fileID: 11500000, guid: 66eb56ed7aaa451468a0dc91f6f183bd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  seedPrefab: {fileID: 3902924369546167501, guid: fa122346f9896114faee0305a9de6c2c, type: 3}
-  PlantingArea: {fileID: 1561227149296132606}
+  plantPrefab: {fileID: 3902924369546167501, guid: fa122346f9896114faee0305a9de6c2c, type: 3}
+  maxGrowthProgress: 5
+  progressBar: {fileID: 0}
