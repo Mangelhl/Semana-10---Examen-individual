@@ -65,8 +65,12 @@
     <Compile Include="Assets\Script\IObserver.cs" />
     <Compile Include="Assets\Script\NPCVendor.cs" />
     <Compile Include="Assets\Script\Player.cs" />
-    <Compile Include="Assets\Script\Seed.cs" />
     <Compile Include="Assets\Script\Market.cs" />
+    <Compile Include="Assets\Script\Seed.cs" />
+    <Compile Include="Assets\Script\ISeed.cs" />
+    <Compile Include="Assets\Script\SeedComponent.cs" />
+    <Compile Include="Assets\Script\PlantingArea.cs" />
+    <Compile Include="Assets\Script\AnimalArea.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\TextMesh Pro\Shaders\TMPro.cginc" />

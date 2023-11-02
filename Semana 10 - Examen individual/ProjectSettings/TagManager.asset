@@ -8,6 +8,8 @@ TagManager:
   - ButtonAnimal
   - 'PlantingArea '
   - Market
+  - 'seedPrefab '
+  - Loading
   layers:
   - Default
   - TransparentFX
